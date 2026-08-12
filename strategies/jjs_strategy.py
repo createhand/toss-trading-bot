@@ -17,9 +17,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from src.models import Signal, StrategyContext, Holding, Side, OrderType, Candle
+from src.models import Signal, StrategyContext, Holding, Side, OrderType, Candle, _to_int
 from src.strategy.base import BaseStrategy
-from src.utils import fmt_num, _to_int
+from src.utils import fmt_num
 
 
 # ── 렌코 차트 계산 ───────────────────────────────────
@@ -315,12 +315,12 @@ class JjsStrategy(BaseStrategy):
         try:
             # 거래대금 상위 종목 가져오기
             ranking = self.client.rankings(
-                sort_by="tradeAmount",
-                duration="daily",
-                market="KR",
-                size=50,
+                ranking_type="MARKET_TRADING_AMOUNT",
+                duration="1d",
+                market_country="KR",
+                count=50,
             )
-            items = ranking.get("items", [])
+            items = ranking.get("rankings", ranking.get("items", []))
         except Exception:
             items = []
 

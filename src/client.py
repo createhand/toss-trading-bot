@@ -431,30 +431,35 @@ class TossClient:
 
     def rankings(
         self,
-        sort_by: str = "tradeAmount",
-        duration: str = "daily",
-        market: str = "KR",
-        page: int = 1,
-        size: int = 30,
+        ranking_type: str = "MARKET_TRADING_AMOUNT",
+        duration: str = "1d",
+        market_country: str = "KR",
+        count: int = 50,
+        exclude_caution: bool = True,
     ) -> dict:
         """주식 랭킹 조회
 
         Args:
-            sort_by: "tradeAmount" (거래대금), "volume" (거래량), "changeRate" (등락률)
-            duration: "realtime" / "daily" / "weekly" / "monthly"
-                     TOP_GAINERS/TOP_LOSERS는 realtime 불가
-            market: "KR" (국내)
-            page: 페이지 번호
-            size: 페이지 크기
+            ranking_type: 랭킹 종류
+                - MARKET_TRADING_AMOUNT: 시장 거래대금 상위
+                - MARKET_TRADING_VOLUME: 시장 거래량 상위
+                - TOP_GAINERS: 급상승 (realtime 미지원)
+                - TOP_LOSERS: 급하락 (realtime 미지원)
+                - TOSS_SECURITIES_TRADING_AMOUNT: 토스증권 거래대금 상위
+                - TOSS_SECURITIES_TRADING_VOLUME: 토스증권 거래량 상위
+            duration: "realtime" / "1d" / "1w" / "1mo" / "3mo" / "6mo" / "1y"
+            market_country: "KR" / "US"
+            count: 조회 수 (최대 100)
+            exclude_caution: 투자 유의 종목 제외
         """
         return self._request(
             "GET", "/api/v1/rankings",
             params={
-                "sortBy": sort_by,
+                "type": ranking_type,
+                "marketCountry": market_country,
                 "duration": duration,
-                "market": market,
-                "page": page,
-                "size": size,
+                "count": count,
+                "excludeInvestmentCaution": exclude_caution,
             },
         ).get("result", {})
 

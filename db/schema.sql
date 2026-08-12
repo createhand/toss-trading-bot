@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS trading_positions (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (symbol, slot)
 );
+CREATE UNIQUE INDEX IF NOT EXISTS trading_positions_symbol_slot_uniq ON trading_positions (symbol, slot);
 
 -- 일일 스캔 로그 (후보 종목 기록)
 CREATE TABLE IF NOT EXISTS trading_scan_log (
@@ -69,12 +70,12 @@ CREATE TABLE IF NOT EXISTS trading_bot_status (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 권한 (기존 참고)
-GRANT ALL ON public.trading_positions TO service_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.trading_positions TO authenticated;
-GRANT ALL ON public.trading_scan_log TO service_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.trading_scan_log TO authenticated;
-GRANT ALL ON public.trading_trade_log TO service_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.trading_trade_log TO authenticated;
-GRANT ALL ON public.trading_bot_status TO service_role;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.trading_bot_status TO authenticated;
+-- 권한 (service_role이 있을 경우)
+-- GRANT ALL ON public.trading_positions TO service_role;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON public.trading_positions TO authenticated;
+-- GRANT ALL ON public.trading_scan_log TO service_role;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON public.trading_scan_log TO authenticated;
+-- GRANT ALL ON public.trading_trade_log TO service_role;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON public.trading_trade_log TO authenticated;
+-- GRANT ALL ON public.trading_bot_status TO service_role;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON public.trading_bot_status TO authenticated;
