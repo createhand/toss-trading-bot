@@ -1,0 +1,21 @@
+[Unit]
+Description=Toss Trading Bot
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/opt/toss-trading-bot
+ExecStart=/opt/toss-trading-bot/venv/bin/python scripts/run_loop.py
+Restart=always
+RestartSec=10
+Environment=PYTHONUNBUFFERED=1
+Environment=DB_PASSWORD=do4#Dk!Ekk33d#zz0l.,##
+
+# 로그
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=toss-bot
+
+[Install]
+WantedBy=multi-user.target
