@@ -15,7 +15,7 @@ from __future__ import annotations
 from flask import Flask, jsonify, request
 from datetime import date
 
-from .db import TradingDB
+from ..db import TradingDB
 
 
 def create_app(db: TradingDB, engine=None) -> Flask:
