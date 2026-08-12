@@ -1,4 +1,4 @@
-"""주기적 루프 실행 — 장시간 동안 계속 실행"""
+"""주기적 루프 실행 — DB + API 서버 + 트레이딩 루프"""
 
 import sys
 from pathlib import Path
@@ -20,8 +20,7 @@ def main():
         sys.exit(1)
 
     engine = TradingEngine(config)
-    engine.initialize()
-    engine.run_loop()
+    engine.run()  # initialize + API 서버 + 루프
 
 
 if __name__ == "__main__":

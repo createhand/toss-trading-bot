@@ -35,12 +35,29 @@ class NotifyConfig:
 
 
 @dataclass
+class DbConfig:
+    host: str = "192.168.29.200"
+    port: int = 5432
+    database: str = "mysvc"
+    user: str = "postgres"
+    password: str = ""
+
+
+@dataclass
+class FlaskConfig:
+    host: str = "0.0.0.0"
+    port: int = 8081
+
+
+@dataclass
 class AppConfig:
     api: ApiConfig = field(default_factory=ApiConfig)
     engine: EngineConfig = field(default_factory=EngineConfig)
     risk: RiskConfig = field(default_factory=RiskConfig)
     strategies: list[str] = field(default_factory=list)
     notify: NotifyConfig = field(default_factory=NotifyConfig)
+    db: DbConfig = field(default_factory=DbConfig)
+    flask: FlaskConfig = field(default_factory=FlaskConfig)
 
 
 def load_config(path: str | Path | None = None) -> AppConfig:
@@ -84,6 +101,21 @@ def load_config(path: str | Path | None = None) -> AppConfig:
         cfg.notify = NotifyConfig(
             log_to_stdout=notify.get("log_to_stdout", True),
             webhook_url=notify.get("webhook_url"),
+        )
+
+        db_raw = raw.get("db", {})
+        cfg.db = DbConfig(
+            host=db_raw.get("host", "192.168.29.200"),
+            port=int(db_raw.get("port", 5432)),
+            database=db_raw.get("database", "mysvc"),
+            user=db_raw.get("user", "postgres"),
+            password=os.getenv("DB_PASSWORD", db_raw.get("password", "")),
+        )
+
+        flask_raw = raw.get("api_server", {})
+        cfg.flask = FlaskConfig(
+            host=flask_raw.get("host", "0.0.0.0"),
+            port=int(flask_raw.get("port", 8081)),
         )
 
     # 환경변수 최종 덮어쓰기

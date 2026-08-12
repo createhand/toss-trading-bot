@@ -1,8 +1,21 @@
-# API
+# 토스증권 API
 api:
   client_id: "your_client_id"
   client_secret: "your_client_secret"
   account_id: null  # null이면 첫 번째 계좌 자동 선택
+
+# DB
+db:
+  host: "192.168.29.200"
+  port: 5432
+  database: "mysvc"
+  user: "postgres"
+  password: ""  # 환경변수 DB_PASSWORD로 덮어쓰기
+
+# API 서버 (Flask)
+api_server:
+  host: "0.0.0.0"
+  port: 8081
 
 # 엔진
 engine:

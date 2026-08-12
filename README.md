@@ -104,6 +104,62 @@ engine:
     └── run_loop.py
 ```
 
+## API 엔드포인트 (Flask :8081)
+
+봇 실행 시 자동으로 REST API 서버가 함께 실행됩니다.
+GreatWeb(Spring Boot)에서 이 API를 호출해 현황 화면을 구성할 수 있습니다.
+
+```
+GET  /api/health          — 헬스체크
+GET  /api/status          — 봇 상태 + 요약 (오픈포지션, 총PnL, 승률, 일일PnL)
+GET  /api/positions       — 오픈 포지션 목록
+GET  /api/positions/all    — 전체 포지션 (종료 포함)
+GET  /api/scan-log        — 스캔 로그 (?date=2026-08-12)
+GET  /api/trade-log       — 거래 로그
+POST /api/control          — 봇 제어 {"action": "start|stop|toggle_dry_run"}
+```
+
+### 응답 예시
+
+**GET /api/status**
+```json
+{
+  "bot": {"status": "RUNNING", "dry_run": true, ...},
+  "summary": {
+    "open_positions": 2,
+    "closed_positions": 15,
+    "total_pnl": 150000,
+    "win_rate": 73.3,
+    "daily_pnl": 30000
+  }
+}
+```
+
+**GET /api/positions**
+```json
+{
+  "positions": [{
+    "symbol": "005930",
+    "slot": 1,
+    "entry_price": 80000,
+    "quantity": 5,
+    "target_price": 88000,
+    "status": "OPEN",
+    "entry_time": "2026-08-12 15:03:00"
+  }]
+}
+```
+
+### GreatWeb 연동
+
+DB를 직접 읽어도 됩니다 (192.168.29.200:5432/mysvc):
+- `trading_positions` — 포지션
+- `trading_scan_log` — 스캔 로그
+- `trading_trade_log` — 거래 로그
+- `trading_bot_status` — 봇 상태
+
+스키마: `db/schema.sql`
+
 ## License
 
 MIT

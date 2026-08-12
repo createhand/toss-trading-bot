@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from .client import TossClient
 from .config import AppConfig
+from .db import TradingDB, DbConfig
 from .models import (
     Candle, Holding, Orderbook, OrderbookEntry, Price, Signal,
     StrategyContext, _to_int,
@@ -42,6 +43,7 @@ class TradingEngine:
             client_secret=config.api.client_secret,
             account_id=config.api.account_id,
         )
+        self.db = TradingDB(config.db)
         self.logger = NotifyLogger(
             log_to_stdout=config.notify.log_to_stdout,
             webhook_url=config.notify.webhook_url,
@@ -50,6 +52,7 @@ class TradingEngine:
         self.risk = RiskManager(config.risk, self.logger)
         self.strategies: list[BaseStrategy] = []
         self._running = False
+        self._flask_app = None
 
     def load_strategies(self) -> None:
         """설정에 정의된 전략 클래스들을 동적 로드"""
@@ -63,18 +66,31 @@ class TradingEngine:
                     raise TypeError(f"{class_name} is not a BaseStrategy subclass")
                 # client가 필요한 전략이면 주입
                 try:
-                    strategy = strategy_cls(client=self.client)
+                    strategy = strategy_cls(client=self.client, db=self.db)
                 except TypeError:
-                    strategy = strategy_cls()
+                    try:
+                        strategy = strategy_cls(client=self.client)
+                    except TypeError:
+                        strategy = strategy_cls()
                 self.strategies.append(strategy)
                 self.logger.info(f"전략 로드: {strategy.name()}")
             except Exception as e:
                 self.logger.error(f"전략 로드 실패 ({path}): {e}")
 
     def initialize(self) -> None:
-        """엔진 초기화 — 계좌 설정, 전략 로드"""
+        """엔진 초기화 — DB, 계좌 설정, 전략 로드"""
         self.logger.info("=== 토스증권 트레이딩 봇 초기화 ===")
         self.logger.info(f"Dry-run: {'ON' if self.config.engine.dry_run else 'OFF (⚠️ 실전 모드!)'}")
+
+        # DB 초기화
+        try:
+            self.db.init_schema()
+            self.logger.info("DB 연동 완료")
+            self.db.update_bot_status(status="INITIALIZING")
+            self.db.reset_daily_pnl()
+        except Exception as e:
+            self.logger.error(f"DB 초기화 실패: {e}")
+            self.logger.info("DB 없이 JSON 모드로 동작합니다")
 
         # 계좌 설정
         account_id = self.client.init_account()
@@ -275,3 +291,30 @@ class TradingEngine:
                 time.sleep(1)
 
         self.logger.info("=== 루프 종료 ===")
+
+    def start_api_server(self) -> None:
+        """Flask REST API 서버 (백그라운드)"""
+        from .api import create_app
+        self._flask_app = create_app(self.db, self)
+
+        import threading
+        self._flask_thread = threading.Thread(
+            target=self._flask_app.run,
+            kwargs={
+                "host": self.config.flask.host,
+                "port": self.config.flask.port,
+                "use_reloader": False,
+            },
+            daemon=True,
+        )
+        self._flask_thread.start()
+        self.logger.info(f"API 서버: http://{self.config.flask.host}:{self.config.flask.port}")
+
+    def run(self) -> None:
+        """API 서버 + 루프 동시 실행"""
+        self.initialize()
+        self.start_api_server()
+        self.db.update_bot_status(status="RUNNING")
+        self.run_loop()
+        self.db.update_bot_status(status="STOPPED")
+
