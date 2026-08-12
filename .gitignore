@@ -1,0 +1,23 @@
+# Dependencies
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Config with secrets
+config.yaml
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Distribution
+dist/
+build/
+*.egg-info/
