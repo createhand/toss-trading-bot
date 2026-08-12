@@ -21,7 +21,7 @@ risk:
 
 # 전략 (Python 모듈 경로)
 strategies:
-  - strategies.example_strategy.ExampleStrategy
+  - strategies.jjs_strategy.JjsStrategy
 
 # 알림
 notify:

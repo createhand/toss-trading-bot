@@ -61,7 +61,11 @@ class TradingEngine:
                 strategy_cls = getattr(module, class_name)
                 if not issubclass(strategy_cls, BaseStrategy):
                     raise TypeError(f"{class_name} is not a BaseStrategy subclass")
-                strategy = strategy_cls()
+                # client가 필요한 전략이면 주입
+                try:
+                    strategy = strategy_cls(client=self.client)
+                except TypeError:
+                    strategy = strategy_cls()
                 self.strategies.append(strategy)
                 self.logger.info(f"전략 로드: {strategy.name()}")
             except Exception as e:
