@@ -236,7 +236,14 @@ class TossClient:
     def holdings(self) -> list[dict]:
         """보유 주식 조회 (종목별 상세 + 평가금액·손익 합산)"""
         data = self._request("GET", "/api/v1/holdings", account=True)
-        return data.get("result", [])
+        result = data.get("result", {})
+        # result가 dict이면 items 안에 실제 목록
+        if isinstance(result, dict):
+            return result.get("items", [])
+        # result가 이미 list면 그대로
+        if isinstance(result, list):
+            return result
+        return []
 
     # ── 주문 (Order) ─────────────────────────────────
 
