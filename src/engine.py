@@ -172,6 +172,9 @@ class TradingEngine:
         try:
             raw_holdings = self.client.holdings()
             for h in raw_holdings:
+                if not isinstance(h, dict):
+                    self.logger.warn(f"보유 항목 타입 이상: {type(h).__name__} = {str(h)[:200]}")
+                    continue
                 holdings.append(Holding.from_api(h))
         except Exception as e:
             self.logger.warn(f"보유 수집 실패: {e}")

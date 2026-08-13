@@ -134,6 +134,8 @@ class Holding:
 
     @classmethod
     def from_api(cls, data: dict) -> Holding:
+        if not isinstance(data, dict):
+            return cls(symbol=str(data)[:10], name="", quantity=0, avg_price=0, current_price=0)
         return cls(
             symbol=data.get("symbol", ""),
             name=data.get("stockName", data.get("name", "")),
