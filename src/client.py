@@ -126,6 +126,12 @@ class TossClient:
             json=json_body,
             timeout=15,
         )
+        if resp.status_code == 429:
+            retry_after = float(resp.headers.get("Retry-After", 2))
+            import logging
+            logging.getLogger(__name__).warning(f"Rate limited (429). Retry-After={retry_after:.1f}s")
+            time.sleep(retry_after)
+            return self._request(method, path, account, params, json_body, rate_group)
         resp.raise_for_status()
         return resp.json()
 

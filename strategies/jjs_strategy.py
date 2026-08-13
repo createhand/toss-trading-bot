@@ -471,6 +471,13 @@ class JjsStrategy(BaseStrategy):
         from src.utils import now_kst
         now = now_kst()
 
+        # 5분마다 한 번만 스캔 (API 호출 절약)
+        if not hasattr(self, '_last_scan_time'):
+            self._last_scan_time = 0
+        if now.timestamp() - self._last_scan_time < 300:
+            return signals
+        self._last_scan_time = now.timestamp()
+
         if now.hour < self.entry_after_hour:
             # 15시 이전: 후보만 스캔해서 보고
             candidates = self._scan_candidates(context)

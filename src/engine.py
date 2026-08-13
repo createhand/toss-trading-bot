@@ -146,6 +146,8 @@ class TradingEngine:
                 self.logger.warn(f"{symbol} 캔들 수집 실패: {e}")
                 candles_map[symbol] = []
 
+            time.sleep(0.2)  # API 호출 간 간격
+
             # 호가
             try:
                 ob_data = self.client.orderbook(symbol)
